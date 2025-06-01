@@ -1,0 +1,167 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  // output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ReactionType {
+  LIKE
+  LOVE
+  LAUGH
+  WOW
+  SAD
+  ANGRY
+}
+
+model Post {
+  id        String   @id @default(uuid())
+  title     String
+  slug      String   @unique
+  content   String
+  coverImage String?
+  excerpt   String?
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  labels   PostLabel[]
+  comments Comment[]
+  Like     Like[]
+  PostView PostView[]
+  Bookmark Bookmark[]
+  Reaction Reaction[]
+
+  @@index([slug])
+}
+
+model Label {
+  id          String      @id @default(uuid())
+  name        String      @unique
+  description String?
+  createdAt   DateTime    @default(now())
+  posts       PostLabel[]
+}
+
+model PostLabel {
+  postId  String
+  labelId String
+
+  post  Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  label Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([postId, labelId])
+}
+
+model User {
+  id        String     @id @default(uuid())
+  name      String
+  email     String     @unique
+  comments  Comment[]
+  createdAt DateTime   @default(now())
+  Like      Like[]
+  Bookmark  Bookmark[]
+  Reaction  Reaction[]
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+
+  // Relasi ke Post
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // Relasi opsional ke User
+  authorId String?
+  author   User?   @relation(fields: [authorId], references: [id])
+
+  // Guest name/email kalau tidak login
+  guestName  String?
+  guestEmail String?
+}
+
+model Subscriber {
+  id                String    @id @default(uuid())
+  email             String    @unique
+  name              String?
+  subscribed        Boolean   @default(true)
+  verified          Boolean   @default(false)
+  verificationToken String?
+  createdAt         DateTime  @default(now())
+  verifiedAt        DateTime?
+}
+
+model Newsletter {
+  id        String    @id @default(uuid())
+  subject   String
+  body      String
+  sentAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model Like {
+  id     String  @id @default(uuid())
+  postId String
+  userId String?
+
+  post Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+}
+
+model Bookmark {
+  id        String   @id @default(uuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId])
+}
+
+model PostView {
+  id        String   @id @default(uuid())
+  postId    String
+  ip        String? // atau userId kalau pakai auth
+  userAgent String?
+  viewedAt  DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id])
+}
+
+model SearchLog {
+  id         String   @id @default(uuid())
+  keyword    String
+  ip         String?
+  searchedAt DateTime @default(now())
+}
+
+model Reaction {
+  id     String       @id @default(uuid())
+  type   ReactionType
+  postId String
+  userId String?
+
+  post Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId, type])
+}
