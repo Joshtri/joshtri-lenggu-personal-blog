@@ -1,0 +1,222 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+
+body {
+  --tt-toolbar-height: 44px;
+  --tt-theme-text: var(--tt-gray-light-900);
+
+  .dark & {
+    --tt-theme-text: var(--tt-gray-dark-900);
+  }
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  color: var(--tt-theme-text);
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  padding: 0;
+  /* PERBAIKAN: Hapus overflow: hidden untuk memungkinkan scroll halaman */
+  overflow: auto;
+}
+
+html,
+body,
+#root,
+#app {
+  /* PERBAIKAN: Ubah height menjadi min-height untuk konten yang panjang */
+  min-height: 100%;
+  background-color: var(--tt-bg-color);
+}
+
+.tiptap.ProseMirror {
+  font-family: "DM Sans", sans-serif;
+}
+
+/* PERBAIKAN: Modifikasi content-wrapper untuk tidak mengambil alih scroll */
+.content-wrapper {
+  /* Hapus height fixed dan overflow-y auto */
+  min-height: calc(100vh - var(--tt-toolbar-height));
+  /* Biarkan konten mengalir secara natural */
+  overflow: visible;
+
+  /* Tetap pertahankan custom scrollbar untuk elemen yang membutuhkan */
+  &.with-scroll {
+    overflow-y: auto;
+    height: calc(100vh - var(--tt-toolbar-height));
+    
+    &::-webkit-scrollbar {
+      display: block;
+      width: 0.5rem;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: var(--tt-scrollbar-color);
+      border-radius: 4px;
+    }
+
+    /* Firefox scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: var(--tt-scrollbar-color) transparent;
+  }
+}
+
+.simple-editor-content {
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+  /* PERBAIKAN: Pastikan konten bisa mengalir secara natural */
+  min-height: 400px;
+  overflow: visible;
+}
+
+.simple-editor-content .tiptap.ProseMirror {
+  padding: 3rem 3rem;
+  /* PERBAIKAN: Pastikan editor tidak mengambil alih scroll */
+  min-height: 400px;
+  max-height: none;
+  overflow: visible;
+  outline: none;
+  
+  &:focus {
+    outline: none;
+  }
+}
+
+/* PERBAIKAN: Wrapper untuk SimpleEditor component */
+.simple-editor-wrapper {
+  /* Pastikan wrapper tidak membatasi tinggi */
+  height: auto !important;
+  min-height: 400px;
+  max-height: none !important;
+  overflow: visible !important;
+  
+  /* Styling untuk container */
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  
+  .dark & {
+    border-color: #374151;
+    background: #1f2937;
+  }
+}
+
+/* PERBAIKAN: Toolbar styling */
+.tiptap-toolbar {
+  position: relative;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 8px 8px 0 0;
+  
+  .dark & {
+    background: #374151;
+    border-bottom-color: #4b5563;
+  }
+  
+  /* Untuk mobile, buat sticky hanya jika diperlukan */
+  &.mobile-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+}
+
+/* PERBAIKAN: Mobile responsive */
+@media screen and (max-width: 480px) {
+  .simple-editor-content .tiptap.ProseMirror {
+    padding: 1rem 1.5rem;
+  }
+  
+  /* Pastikan pada mobile scroll tetap berfungsi */
+  body {
+    overflow: auto !important;
+  }
+  
+  .simple-editor-wrapper {
+    margin: 0;
+    border-radius: 4px;
+  }
+  
+  .tiptap-toolbar {
+    border-radius: 4px 4px 0 0;
+  }
+}
+
+/* PERBAIKAN: Tambahan untuk memastikan scroll behavior yang benar */
+.simple-editor-container {
+  /* Container untuk seluruh editor */
+  position: relative;
+  width: 100%;
+  
+  /* Pastikan tidak ada konflik dengan parent scroll */
+  overflow: visible;
+  height: auto;
+}
+
+/* PERBAIKAN: Custom scrollbar untuk halaman utama jika diperlukan */
+body::-webkit-scrollbar {
+  width: 8px;
+}
+
+body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+body::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+body::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.dark body::-webkit-scrollbar-track {
+  background: #2d3748;
+}
+
+.dark body::-webkit-scrollbar-thumb {
+  background: #4a5568;
+}
+
+.dark body::-webkit-scrollbar-thumb:hover {
+  background: #718096;
+}
+
+/* PERBAIKAN: Pastikan ProseMirror tidak mengambil alih scroll events */
+.ProseMirror {
+  /* Reset semua scroll behavior yang mungkin mengganggu */
+  overflow: visible !important;
+  max-height: none !important;
+  
+  /* Fokus styling */
+  &:focus {
+    outline: none;
+    box-shadow: none;
+  }
+  
+  /* Pastikan konten bisa di-select dengan normal */
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+/* PERBAIKAN: Untuk mencegah layout shift */
+.simple-editor-loading {
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f9fafb;
+  border-radius: 8px;
+  
+  .dark & {
+    background: #374151;
+  }
+}
