@@ -75,7 +75,7 @@ export async function uploadImageToFirebase(
   const encodedPath = encodeURIComponent(snapshot.ref.fullPath);
 
   // 💡 Gunakan manual hardcoded project ID untuk URL
-  const projectId = "realtime-views-d8638"; // <- ganti jika berubah
+  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID; // <- ganti jika berubah
   const url = `https://firebasestorage.googleapis.com/v0/b/${projectId}.appspot.com/o/${encodedPath}?alt=media`;
 
   return {
