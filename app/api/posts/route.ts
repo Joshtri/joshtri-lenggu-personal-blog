@@ -3,19 +3,31 @@ import { NextResponse } from 'next/server';
 import { uploadImageToFirebase } from '@/lib/firebase/upload'
 
 // GET /api/posts
+
 export async function GET() {
-    const posts = await prisma.post.findMany({
+  const posts = await prisma.post.findMany({
+    include: {
+      labels: {
         include: {
-            labels: true,
-            comments: true,
-            Like: true,
-            PostView: true,
-            Bookmark: true,
-            Reaction: true,
+          label: true, // Ambil data nama label
         },
-        orderBy: { createdAt: 'desc' },
-    });
-    return NextResponse.json(posts);
+      },
+      comments: true,
+      Like: true,
+      PostView: true,
+      Bookmark: true,
+      Reaction: true,
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  // Opsional: Ubah struktur agar hanya mengembalikan array nama label
+  const formattedPosts = posts.map((post) => ({
+    ...post,
+    labelNames: post.labels.map((pl) => pl.label.name), // Misal: ['Tutorial', 'Tips']
+  }));
+
+  return NextResponse.json(formattedPosts);
 }
 
 // POST /api/posts
