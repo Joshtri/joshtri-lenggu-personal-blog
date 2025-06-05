@@ -169,9 +169,11 @@ export function AppHeader() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <Button asChild size="sm" className="hidden sm:flex">
-                  <Link href="/login">Login</Link>
-                </Button>
+                // <Button asChild size="sm" className="hidden sm:flex">
+                //   <Link href="/login">Login</Link>
+                // </Button>
+                <>
+                </>
               )}
 
               {/* Mobile Menu */}
