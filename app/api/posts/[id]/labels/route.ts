@@ -1,26 +1,35 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
+
 export async function POST(req: Request, { params }: { params: { id: string } }) {
-  try {
-    const { labelIds } = await req.json(); // array of label ID
+    try {
+        const { labelIds } = await req.json();
 
-    const post = await prisma.post.update({
-      where: { id: params.id },
-      data: {
-        labels: {
-          set: [], // clear existing
-          connect: labelIds.map((id: string) => ({ id })),
-        },
-      },
-      include: {
-        labels: true,
-      },
-    });
+        // Clear existing PostLabel
+        await prisma.postLabel.deleteMany({
+            where: { postId: params.id },
+        });
 
-    return NextResponse.json(post);
-  } catch (error) {
-    console.error("Gagal assign label:", error);
-    return NextResponse.json({ error: 'Failed to assign labels' }, { status: 500 });
-  }
+        // Re-connect with new labels
+        const newRelations = labelIds.map((labelId: string) => ({
+            postId: params.id,
+            labelId,
+        }));
+
+        await prisma.postLabel.createMany({
+            data: newRelations,
+        });
+
+        // Optional: return the updated labels
+        const updatedPost = await prisma.post.findUnique({
+            where: { id: params.id },
+            include: { labels: true },
+        });
+
+        return NextResponse.json(updatedPost);
+    } catch (error) {
+        console.error("Gagal assign label:", error);
+        return NextResponse.json({ error: 'Failed to assign labels' }, { status: 500 });
+    }
 }
