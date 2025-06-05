@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label, Post } from "@prisma/client";
@@ -12,9 +17,15 @@ interface Props {
   open: boolean;
   onClose: () => void;
   post: Post | null;
+  onSuccess?: () => void; // Callback after saving
 }
 
-export function ManagePostLabelsDialog({ open, onClose, post }: Props) {
+export function ManagePostLabelsDialog({
+  open,
+  onClose,
+  post,
+  onSuccess,
+}: Props) {
   const [labels, setLabels] = useState<Label[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
 
@@ -43,6 +54,7 @@ export function ManagePostLabelsDialog({ open, onClose, post }: Props) {
     try {
       await assignLabelsToPost(post.id, selected);
       toast.success("Label berhasil diperbarui");
+      onSuccess?.(); // Panggil callback jika ada
       onClose();
     } catch (err) {
       toast.error("Gagal menyimpan label");
