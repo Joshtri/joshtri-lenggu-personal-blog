@@ -31,5 +31,5 @@ export const deleteLabel = (id: string): Promise<{ message: string }> =>
 
 // ✅ Assign label ke post
 export const assignLabelsToPost = async (postId: string, labelIds: string[]): Promise<void> => {
-  await api.post(`/api/posts/${postId}/labels`, { labelIds });
+  await api.post(`/posts/${postId}/labels`, { labelIds });
 };
