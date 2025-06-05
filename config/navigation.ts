@@ -32,7 +32,6 @@ export interface NavSection {
 }
 
 // === Menu Admin & Superadmin ===
-
 export const navByRole: Record<Role, NavSection[]> = {
     ADMIN: [
         {
