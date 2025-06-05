@@ -11,7 +11,7 @@ import {
   patchPost,
   updatePost,
 } from "@/services/post.service";
-import type { Post } from "@prisma/client";
+import type { Label, Post } from "@prisma/client";
 import { CheckCircle, Tags, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -19,26 +19,37 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ManagePostLabelsDialog } from "@/components/labels/ManagePostLabelsDialog";
 
+type PostWithLabels = Post & {
+  labels: Label[];
+};
+
 export default function PostsPage() {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<PostWithLabels[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [selectedPost, setSelectedPost] = useState<
+    Post | PostWithLabels | null
+  >(null);
   const [labelModalOpen, setLabelModalOpen] = useState(false);
 
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const data = await getPosts();
-        setPosts(data);
-      } catch (error) {
-        console.error("Gagal ambil post:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchPosts = async () => {
+    try {
+      const data = await getPosts();
 
+      const mapped = data.map((post: Post) => ({
+        ...post,
+        labels: post.labels.map((pl: any) => pl.label), // ambil hanya info label
+      }));
+
+      setPosts(mapped);
+    } catch (error) {
+      console.error("Gagal ambil post:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
     fetchPosts();
   }, []);
 
@@ -55,6 +66,26 @@ export default function PostsPage() {
         />
       ),
       center: false,
+    },
+
+    {
+      label: "Labels",
+      accessor: (post: PostWithLabels) => (
+        <div className="flex flex-wrap gap-1">
+          {post.labels.length > 0 ? (
+            post.labels.map((label) => (
+              <span
+                key={label.id}
+                className="px-2 py-0.5 text-xs rounded bg-muted text-muted-foreground border"
+              >
+                {label.name}
+              </span>
+            ))
+          ) : (
+            <span className="text-muted-foreground italic text-xs">-</span>
+          )}
+        </div>
+      ),
     },
   ];
 
@@ -91,7 +122,9 @@ export default function PostsPage() {
               published: updated.published, // jika diperlukan
             });
             setPosts((prev) =>
-              prev.map((p) => (p.id === result.id ? result : p))
+              prev.map((p) =>
+                p.id === result.id ? { ...result, labels: p.labels } : p
+              )
             );
           } catch (err) {
             console.error("Gagal update post:", err);
@@ -127,13 +160,17 @@ export default function PostsPage() {
                   });
 
                   setPosts((prev) =>
-                    prev.map((p) => (p.id === updated.id ? updated : p))
+                    prev.map((p) =>
+                      p.id === updated.id ? { ...updated, labels: p.labels } : p
+                    )
                   );
                   toast.success(
                     post.published
                       ? "Post berhasil ditandai sebagai draft."
                       : "Post berhasil dipublikasikan."
                   );
+
+                  fetchPosts(); // refresh data
                 } catch (err) {
                   console.error("Gagal toggle publish:", err);
                   alert("Gagal mengubah status publikasi.");
@@ -158,6 +195,10 @@ export default function PostsPage() {
         open={labelModalOpen}
         onClose={() => setLabelModalOpen(false)}
         post={selectedPost}
+        onSuccess={() => {
+          // toast.success("Label berhasil diperbarui");
+          fetchPosts(); // panggil ulang data post
+        }}
       />
     </Container>
   );
