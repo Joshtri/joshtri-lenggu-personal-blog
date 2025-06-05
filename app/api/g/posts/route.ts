@@ -25,9 +25,15 @@ export async function GET() {
             },
         });
 
+        const mappedPosts = posts.map((post) => ({
+            ...post,
+            labels: post.labels.map((pl) => pl.label.name), // ambil nama label saja
+        }));
+
+
         return NextResponse.json({
             success: true,
-            data: posts,
+            data: mappedPosts,
         });
     } catch (error) {
         console.error("GET /g/posts error:", error);
