@@ -1,0 +1,23 @@
+### REST Client for Testing User APIs
+
+### Register New User
+POST http://localhost:3000/api/users
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "stuffofyos1516@gmail.com",
+  "password": "admin#123"
+}
+
+### Login User
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": "password123"
+}
+
+### Get All Users
+GET http://localhost:3000/api/users

@@ -2,6 +2,8 @@ import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useEffect, useState } from "react";
 import { assignLabelsToPost } from "@/services/post.service";
+import { Post } from "@prisma/client";
+import { Button } from "../ui/button";
 
 export function LabelSelectorDialog({ open, onClose, post, allLabels, onAssigned }: {
   open: boolean;

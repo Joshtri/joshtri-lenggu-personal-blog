@@ -11,24 +11,41 @@ import { Button } from "@/components/ui/button";
 import { useMemo, useState } from "react";
 import { ActionsButton } from "@/components/common/ActionsButton";
 
-interface Column {
+// Define base data item type
+export type DataItem = Record<string, unknown>;
+
+// Define column type with generics
+export interface Column<T extends DataItem = DataItem> {
   label: string;
-  accessor: string | ((item: any, index: number) => React.ReactNode);
+  accessor: keyof T | ((item: T, index: number) => React.ReactNode);
   center?: boolean;
 }
 
-interface DataTableProps {
-  columns: Column[];
-  data: any[];
+// Define action configuration type
+export interface ActionConfig<T extends DataItem = DataItem> {
+  onEdit?: (item: T) => void;
+  onDelete?: (item: T) => void;
+  onView?: (item: T) => void;
+  customActions?: (item: T) => Array<{
+    label: string;
+    icon?: React.ReactNode;
+    onClick: () => void;
+  }>;
+}
+
+// Define props with generics
+interface DataTableProps<T extends DataItem = DataItem> {
+  columns: Column<T>[];
+  data: T[];
   isLoading?: boolean;
-  actionsConfig?: any;
+  actionsConfig?: ActionConfig<T>;
   pageSize?: number;
   skeletonRows?: number;
   enableInlineEdit?: boolean;
-  onInlineEdit?: (updated: any) => void;
+  onInlineEdit?: (updated: T) => void;
 }
 
-export default function DataTable({
+export default function DataTable<T extends DataItem = DataItem>({
   columns,
   data,
   isLoading = false,
@@ -37,10 +54,10 @@ export default function DataTable({
   skeletonRows = 5,
   enableInlineEdit = false,
   onInlineEdit,
-}: DataTableProps) {
+}: DataTableProps<T>) {
   const [page, setPage] = useState(1);
   const [editingRowId, setEditingRowId] = useState<string | null>(null);
-  const [editingData, setEditingData] = useState<Record<string, any>>({});
+  const [editingData, setEditingData] = useState<Record<string, unknown>>({});
 
   const paginated = useMemo(() => {
     const start = (page - 1) * pageSize;
@@ -49,13 +66,13 @@ export default function DataTable({
 
   const totalPages = Math.ceil(data.length / pageSize);
 
-  const handleCellChange = (name: string, value: string) => {
+  const handleCellChange = (name: string, value: unknown) => {
     setEditingData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSaveEdit = () => {
     if (onInlineEdit && editingRowId) {
-      onInlineEdit(editingData);
+      onInlineEdit(editingData as T);
       setEditingRowId(null);
     }
   };
@@ -94,18 +111,21 @@ export default function DataTable({
                 </TableRow>
               ))
             : paginated.map((item, i) => {
-                const isEditing = enableInlineEdit && editingRowId === item.id;
+                // Type guard to check if item has an id property
+                const itemId = (item as { id?: string }).id;
+                const isEditing = enableInlineEdit && itemId && editingRowId === itemId;
+                
                 return (
                   <TableRow
-                    key={item.id || i}
+                    key={itemId || `row-${i}`}
                     onClick={(e) => {
-                      if (enableInlineEdit) {
+                      if (enableInlineEdit && itemId) {
                         const isActionColumn =
                           (e.target as HTMLElement).closest("td")?.dataset
                             .type === "actions";
                         if (isActionColumn) return;
 
-                        setEditingRowId(item.id);
+                        setEditingRowId(itemId);
                         setEditingData(item);
                       }
                     }}
@@ -120,11 +140,11 @@ export default function DataTable({
                       >
                         {isEditing && typeof col.accessor === "string" ? (
                           <input
-                            name={col.accessor}
-                            value={editingData[col.accessor] ?? ""}
+                            name={String(col.accessor)}
+                            value={String(editingData[String(col.accessor)] ?? "")}
                             onChange={(e) =>
                               handleCellChange(
-                                col.accessor as string,
+                                String(col.accessor),
                                 e.target.value
                               )
                             }
@@ -133,7 +153,8 @@ export default function DataTable({
                         ) : typeof col.accessor === "function" ? (
                           col.accessor(item, i)
                         ) : (
-                          item[col.accessor]
+                          // Safely access nested property
+                          String(item[col.accessor as keyof T] ?? "")
                         )}
                       </TableCell>
                     ))}
@@ -165,21 +186,23 @@ export default function DataTable({
                           <ActionsButton
                             viewAction={
                               actionsConfig.onView
-                                ? () => actionsConfig.onView(item)
+                                ? () => actionsConfig.onView?.(item)
                                 : undefined
                             }
                             editAction={
                               actionsConfig.onEdit
-                                ? () => actionsConfig.onEdit(item)
+                                ? () => actionsConfig.onEdit?.(item)
                                 : undefined
                             }
                             deleteAction={
                               actionsConfig.onDelete
-                                ? actionsConfig.onDelete(item)
+                                ? {
+                                    onConfirm: () => actionsConfig.onDelete?.(item)
+                                  }
                                 : undefined
                             }
                             customActions={
-                              actionsConfig.customActions?.(item) ?? []
+                              actionsConfig.customActions?.(item) || []
                             }
                           />
                         )}

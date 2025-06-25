@@ -7,22 +7,36 @@ import DataTable from "./datatable";
 import CardGrid from "./cardgrid";
 import SearchBar from "@/components/ui/search-bar";
 
-interface Column {
+// Define a generic type for the data items
+export type DataItem = Record<string, unknown>;
+
+export interface Column<T extends DataItem = DataItem> {
   label: string;
-  accessor: string | ((item: any, index: number) => React.ReactNode);
+  accessor: keyof T | ((item: T, index: number) => React.ReactNode);
   center?: boolean;
 }
 
-interface DataViewSwitcherProps {
+export interface ActionConfig<T extends DataItem = DataItem> {
+  onEdit?: (item: T) => void;
+  onDelete?: (item: T) => void;
+  onView?: (item: T) => void;
+  customActions?: (item: T) => Array<{
+    label: string;
+    icon?: React.ReactNode;
+    onClick: () => void;
+  }>;
+}
+
+interface DataViewSwitcherProps<T extends DataItem = DataItem> {
   view?: "table" | "grid";
-  columns: Column[];
-  data: any[];
+  columns: Column<T>[];
+  data: T[];
   isLoading?: boolean;
-  actionsConfig?: any;
+  actionsConfig?: ActionConfig<T>;
   pageSize?: number;
   skeletonRows?: number;
   enableInlineEdit?: boolean;
-  onInlineEdit?: (updated: any) => void;
+  onInlineEdit?: (updated: T) => void;
 }
 
 export default function DataViewSwitcher({

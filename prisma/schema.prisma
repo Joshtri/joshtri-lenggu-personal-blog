@@ -24,15 +24,15 @@ enum ReactionType {
 }
 
 model Post {
-  id        String   @id @default(uuid())
-  title     String
-  slug      String   @unique
-  content   String
+  id         String   @id @default(uuid())
+  title      String
+  slug       String   @unique
+  content    String
   coverImage String?
-  excerpt   String?
-  published Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  excerpt    String?
+  published  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   labels   PostLabel[]
   comments Comment[]
@@ -63,14 +63,18 @@ model PostLabel {
 }
 
 model User {
-  id        String     @id @default(uuid())
+  id        String    @id @default(uuid())
   name      String
-  email     String     @unique
+  email     String    @unique
+  password  String
+  role      Role      @default(USER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
   comments  Comment[]
-  createdAt DateTime   @default(now())
-  Like      Like[]
-  Bookmark  Bookmark[]
-  Reaction  Reaction[]
+  Like     Like[]
+  Bookmark Bookmark[]
+  Reaction Reaction[]
 }
 
 model Comment {
@@ -164,4 +168,9 @@ model Reaction {
   createdAt DateTime @default(now())
 
   @@unique([postId, userId, type])
+}
+
+enum Role {
+  ADMIN
+  USER
 }

@@ -1,23 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { motion } from "framer-motion";
-import { useParams } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import MotionWrapper from "@/components/animations/MotionWrapper";
+import Comment from "@/components/comments/Comment";
+import EmptyState from "@/components/custom/EmptyState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, Clock } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Container } from "@/components/ui/container";
+import { ContentSkeleton } from "@/components/ui/loading/ContentSkeleton";
+import { fadeIn } from "@/lib/animations";
 import { getPostBySlug } from "@/services/public/post.service";
 import { PublicPost } from "@/types/public";
-import { Container } from "@/components/ui/container";
-import { ContentSkeleton } from "@/components/ui/loading/ContentSkeleton"; // ✅ pakai skeleton reusable
-import { fadeIn } from "@/lib/animations"; // atau "@/lib/animations" jika digabung
-import EmptyState from "@/components/custom/EmptyState";
-import MotionWrapper from "@/components/animations/MotionWrapper";
 import { calculateReadTime, formatIndonesianDate } from "@/utils/common";
-import Comment from "@/components/comments/Comment";
+import { ArrowLeft, Calendar, Clock } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function PostPage() {
   const params = useParams();
@@ -38,13 +37,8 @@ export default function PostPage() {
 
         const postWithDefaults: PublicPost = {
           ...fetchedPost,
-          readTime: fetchedPost.readTime || calculateReadTime(fetchedPost.content),
-
-          category:
-            fetchedPost.category ||
-            ["Technology", "Programming", "Design", "AI"][
-              Math.floor(Math.random() * 4)
-            ],
+          readTime:
+            fetchedPost.readTime || calculateReadTime(fetchedPost.content),
         };
 
         setPost(postWithDefaults);
@@ -70,7 +64,7 @@ export default function PostPage() {
       </MotionWrapper>
 
       {loading ? (
-        <ContentSkeleton withImage lines={5} /> // ✅ gunakan komponen reusable
+        <ContentSkeleton withImage lines={5} />
       ) : error || !post ? (
         <EmptyState
           title="Post Tidak Ditemukan"
@@ -90,9 +84,21 @@ export default function PostPage() {
                   sizes="(max-width: 768px) 100vw, 75vw"
                   priority
                 />
-                <Badge className="absolute top-3 left-3 z-10">
-                  {post.category}
-                </Badge>
+                {/* Display labels dynamically */}
+                <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-2">
+                  {post.labels && post.labels.length > 0 ? (
+                    post.labels.map((label, index) => (
+                      <Badge
+                        key={index}
+                        className="bg-primary hover:bg-primary/90"
+                      >
+                        {label.label.name}
+                      </Badge>
+                    ))
+                  ) : (
+                    <Badge>Uncategorized</Badge>
+                  )}
+                </div>
               </div>
             )}
             <CardHeader>
@@ -117,7 +123,7 @@ export default function PostPage() {
               />
             </CardContent>
           </Card>
-            <Comment /> {/* Add Comment component */}
+          <Comment />
         </MotionWrapper>
       )}
     </Container>

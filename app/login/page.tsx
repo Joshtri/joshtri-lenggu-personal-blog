@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,27 +45,27 @@ export default function LoginPage() {
   const {
     handleSubmit,
     control,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
   } = form;
 
   const onSubmit = async (data: LoginFormValues) => {
     try {
       const res = await axios.post("/api/auth/login", data);
-      const role = res.data.user.role;
 
       toast.success("Login berhasil");
 
-      // Use window.location for full page reload to ensure middleware runs properly
-      if (role === "ADMIN") {
-        window.location.href = "/admin/dashboard";
-      } else if (role === "SISWA") {
-        window.location.href = "/siswa/dashboard";
+      // Simply redirect to dashboard without checking role
+      window.location.href = "/sys/dashboard";
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        const message = error.response?.data?.message || "Gagal login";
+        toast.error(message);
       } else {
-        toast.error("Role tidak dikenali");
+        // For non-axios errors
+        const errorMessage =
+          error instanceof Error ? error.message : "Gagal login";
+        toast.error(errorMessage);
       }
-    } catch (error: any) {
-      const message = error.response?.data?.message || "Gagal login";
-      toast.error(message);
     }
   };
 
@@ -72,15 +73,10 @@ export default function LoginPage() {
     const checkSession = async () => {
       try {
         const res = await axios.get("/api/auth/me");
-        const role = res.data.user.role;
-
-        if (role === "ADMIN") {
-          router.replace("/admin/dashboard");
-        } else if (role === "SISWA") {
-          router.replace("/siswa/dashboard");
-        }
-      } catch (err) {
-        // Tidak ada session aktif, lanjut tampilkan halaman login
+        // If we get here, user is logged in, redirect to dashboard
+        router.replace("/dashboard");
+      } catch (err: unknown) {
+        // User is not logged in, stay on login page
         console.log("Belum login, tetap di halaman login");
       }
     };
@@ -93,7 +89,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle className="text-center text-lg">
-            Login Akun Pembaca
+            Login to Your Account
           </CardTitle>
         </CardHeader>
         <Form {...form}>
@@ -173,9 +169,12 @@ export default function LoginPage() {
               <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting ? "Loading..." : "Masuk"}
               </Button>
-              <p className="text-xs text-muted-foreground text-center">
-                {/* Sistem Pendukung Keputusan Pemilihan Program Studi */}
-              </p>
+              <div className="mt-4 text-center text-sm">
+                Don't have an account?{" "}
+                <Link href="/register" className="text-primary hover:underline">
+                  Register here
+                </Link>
+              </div>
             </CardFooter>
           </form>
         </Form>

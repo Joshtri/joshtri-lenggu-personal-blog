@@ -1,4 +1,4 @@
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
+import { ref, uploadBytes } from "firebase/storage"
 import { storage } from "./firebase"
 
 export interface UploadResult {

@@ -97,7 +97,7 @@ export default function EditPostPage() {
     try {
       await updatePost(postId, { ...data, content: latestContent });
       toast.success("Post berhasil diperbarui!");
-      router.push(`/sys/posts/${postId}`);
+      router.push(`/sys/posts/${postId}/preview`);
     } catch (err) {
       toast.error("Gagal menyimpan perubahan.");
     }
