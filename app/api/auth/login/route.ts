@@ -4,8 +4,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import { z } from "zod";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
+// const prisma = new PrismaClient();
 
 // Input validation schema
 const loginSchema = z.object({
