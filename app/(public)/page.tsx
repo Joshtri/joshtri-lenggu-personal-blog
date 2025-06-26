@@ -25,6 +25,7 @@ import { useEffect, useState } from "react";
 import { getAllLabels } from "@/services/public/label.service";
 import type { Label } from "@prisma/client"; // pastikan type sudah ada
 import { useSearchParams } from "next/navigation";
+import ImageWithSkeleton from "@/components/ui/loading/ImageWithSkeleton";
 
 export default function Home() {
   const [posts, setPosts] = useState<PublicPost[]>([]);
@@ -205,7 +206,7 @@ export default function Home() {
                     <div className="relative h-48 w-full overflow-hidden">
                       {post.coverImage && (
                         <div className="relative w-full h-48 overflow-hidden rounded-t-md">
-                          <Image
+                          {/* <Image
                             src={post.coverImage || "/placeholder.svg"}
                             alt={post.title}
                             fill
@@ -213,6 +214,11 @@ export default function Home() {
                             sizes="(max-width: 768px) 100vw, 33vw"
                             priority={index < 3}
                             loading={index < 3 ? "eager" : "lazy"}
+                          /> */}
+                          <ImageWithSkeleton
+                            src={post.coverImage || "/placeholder.svg"}
+                            alt={post.title}
+                            priority={index < 3}
                           />
                         </div>
                       )}
